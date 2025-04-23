@@ -1,0 +1,209 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// 사용자 모델
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 역할 enum
+enum Role {
+  USER
+  ADMIN
+}
+
+// 제품 모델
+model Product {
+  id              String            @id @default(uuid())
+  name            String            @unique
+  description     String
+  baseQuantity    Int              @default(1000)    // 기준 수량 (1000개)
+  baseDays        Int              @default(1)       // 기준 수량 생산에 필요한 일수
+  equipmentTypes  ProductEquipment[]
+  productions     Production[]
+  standards       QualityStandard[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+// 설비 유형 모델
+model EquipmentType {
+  id          String            @id @default(cuid())
+  name        String
+  products    ProductEquipment[]
+  equipments  Equipment[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+// 제품-설비 유형 관계 모델
+model ProductEquipment {
+  id              String        @id @default(cuid())
+  product         Product       @relation(fields: [productId], references: [id])
+  productId       String
+  equipmentType   EquipmentType @relation(fields: [equipmentTypeId], references: [id])
+  equipmentTypeId String
+  quantity        Int          @default(1)  // 필요한 설비 수량
+  sequence        Int          @default(1)  // 생산 순서
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@unique([productId, equipmentTypeId])
+  @@index([productId])
+  @@index([equipmentTypeId])
+}
+
+// 설비 모델
+model Equipment {
+  id              String                @id @default(cuid())
+  name            String
+  type            EquipmentType         @relation(fields: [typeId], references: [id])
+  typeId          String
+  location        Location              @relation(fields: [locationId], references: [id])
+  locationId      String
+  status          Status                @default(ACTIVE)
+  operationStatus OperationStatus       @default(STANDBY)
+  lastMaintenance DateTime?
+  nextMaintenance DateTime?
+  productions     ProductionEquipment[]
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  @@index([typeId])
+  @@index([locationId])
+}
+
+// 위치 모델
+model Location {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  description String?
+  equipments  Equipment[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+// 생산 계획 모델
+model Production {
+  id        String   @id @default(uuid())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  startTime DateTime
+  endTime   DateTime
+  status    Status   @default(PLANNED)
+  equipments ProductionEquipment[]
+  qualityChecks   QualityCheck[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+}
+
+// 생산-장비 관계 모델
+model ProductionEquipment {
+  id           String     @id @default(cuid())
+  production   Production @relation(fields: [productionId], references: [id])
+  productionId String
+  equipment    Equipment  @relation(fields: [equipmentId], references: [id])
+  equipmentId  String
+  sequence     Int        @default(1)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([productionId, equipmentId])
+  @@index([productionId])
+  @@index([equipmentId])
+}
+
+// 품질 검사 모델
+model QualityCheck {
+  id              String    @id @default(cuid())
+  standardId      String
+  standard        QualityStandard @relation(fields: [standardId], references: [id])
+  productionId    String?
+  production      Production? @relation(fields: [productionId], references: [id])
+  batchNumber     String
+  inspector       String
+  checkDate       DateTime
+  results         Json      // 각 기준별 검사 결과
+  status          QualityStatus @default(PENDING)
+  notes           String?
+  images          Json      @default("[]") // 검사 이미지 URL 배열을 JSON으로 저장
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([standardId])
+  @@index([productionId])
+}
+
+// 품질 결과 enum
+enum QualityResult {
+  PENDING
+  PASSED
+  FAILED
+  NEEDS_REVIEW
+}
+
+// 재고 모델
+model Inventory {
+  id          String   @id @default(cuid())
+  itemName    String
+  quantity    Int
+  location    String
+  minQuantity Int
+  maxQuantity Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum OperationStatus {
+  OPERATING
+  STANDBY
+}
+
+enum QualityStatus {
+  PENDING
+  PASSED
+  FAILED
+  NEEDS_REVIEW
+}
+
+model QualityStandard {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  name        String
+  description String?
+  criteria    Json     // 검사 기준 항목들
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  checks      QualityCheck[]
+
+  @@index([productId])
+} 

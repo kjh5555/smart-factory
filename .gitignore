@@ -30,11 +30,45 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# local env files
+.env
+.env*.local
+.env.development
+.env.test
+.env.production
+
+# server configurations
+*.config.server.js
+server-config.json
+/config/server/*
 
 # vercel
 .vercel
+
+# IDE / Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+logs
+*.log
+
+# Database
+*.sqlite
+*.db
+prisma/dev.db
+prisma/*.db-journal
+
+# Build artifacts
+dist/
+.turbo
+
+# cache
+.eslintcache
+.cache/
 
 # typescript
 *.tsbuildinfo

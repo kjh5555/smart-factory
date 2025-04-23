@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Equipment` ADD COLUMN `operationStatus` ENUM('OPERATING', 'STANDBY') NOT NULL DEFAULT 'STANDBY';
