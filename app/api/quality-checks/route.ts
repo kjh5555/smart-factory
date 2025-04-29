@@ -1,6 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { PrismaClient, Prisma } from "@prisma/client";
+import { Status } from "@prisma/client";
+
+// any 타입 경고 억제를 위한 타입 주석 추가
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 
 const checkResultSchema = z.object({
   criteriaId: z.string(),
@@ -18,6 +23,15 @@ const qualityCheckSchema = z.object({
   notes: z.string().optional(),
   images: z.array(z.string()).optional(),
 });
+
+// 'any' 타입을 구체적인 타입으로 변경
+// 먼저 적절한 타입을 정의합니다
+interface QualityCheckResult {
+  criteriaId: string;
+  value: string | number;
+  status: "PASS" | "FAIL";
+  notes?: string;
+}
 
 // GET /api/quality-checks - 품질 검사 목록 조회
 export async function GET(req: Request) {
@@ -92,7 +106,7 @@ export async function POST(req: Request) {
         batchNumber: validatedData.batchNumber,
         inspector: validatedData.inspector,
         checkDate: new Date(),
-        results: validatedData.results,
+        results: validatedData.results as Prisma.JsonValue,
         status: overallStatus as QualityStatus,
         notes: validatedData.notes,
         images: validatedData.images || [],

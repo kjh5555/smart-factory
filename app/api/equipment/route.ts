@@ -2,7 +2,6 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { Status } from "@prisma/client";
 import { z } from "zod";
-import { OperationStatus } from "@/types/equipment";
 
 // 입력 데이터 검증을 위한 스키마
 const equipmentSchema = z.object({
@@ -34,7 +33,7 @@ export async function GET() {
       (eq) => eq.status === Status.ACTIVE
     ).length;
     const needsMaintenance = equipments.filter(
-      (eq) => eq.nextMaintenance < new Date()
+      (eq) => eq.nextMaintenance && eq.nextMaintenance < new Date()
     ).length;
     const operatingEquipment = equipments.filter(
       (eq) => eq.operationStatus === "OPERATING"

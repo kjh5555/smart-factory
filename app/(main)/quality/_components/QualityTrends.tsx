@@ -22,13 +22,6 @@ interface TrendsResponse {
   }[];
 }
 
-// 차트에 사용할 데이터 타입
-interface ChartData {
-  date: string;
-  passRate: number;
-  totalChecks: number;
-}
-
 export default function QualityTrends() {
   const { data, isLoading } = useQuery<TrendsResponse>({
     queryKey: ["quality-trends"],

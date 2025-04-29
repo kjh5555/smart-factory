@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Production, ProductionStatus } from "@prisma/client";
+import { Production } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { ClipboardList, PlayCircle, CheckCircle2, AlertCircle } from "lucide-react";

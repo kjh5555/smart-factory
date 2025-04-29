@@ -42,9 +42,14 @@ export async function POST(req: Request) {
     });
 
     // 비밀번호를 제외한 사용자 정보 반환
-    const { password: _, ...userWithoutPassword } = user;
-    
-    return NextResponse.json(userWithoutPassword, { status: 201 });
+    return NextResponse.json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

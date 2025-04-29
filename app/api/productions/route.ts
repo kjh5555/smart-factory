@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { z } from "zod";
 
 // GET /api/productions - 생산 계획 목록 조회
 export async function GET() {
