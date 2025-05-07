@@ -1,15 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
-
 // 특정 재고 항목 조회
-export async function GET(request: Request, { params }: RouteParams) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   const { id } = params;
 
   try {
@@ -25,14 +22,11 @@ export async function GET(request: Request, { params }: RouteParams) {
     }
 
     // 위치 정보 가져오기
-    const location = await prisma.location.findUnique({
-      where: { id: inventory.location },
-    });
+    const locationName = inventory.location;
 
-    // 위치 이름 추가
     const enrichedItem = {
       ...inventory,
-      locationName: location ? location.name : inventory.location,
+      locationName: locationName,
     };
 
     return NextResponse.json(enrichedItem);
@@ -46,7 +40,10 @@ export async function GET(request: Request, { params }: RouteParams) {
 }
 
 // 재고 항목 수정
-export async function PUT(request: Request, { params }: RouteParams) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   const { id } = params;
   
   try {
@@ -67,8 +64,8 @@ export async function PUT(request: Request, { params }: RouteParams) {
         itemName: data.itemName,
         quantity: parseInt(data.quantity),
         location: data.location,
-        minQuantity: parseInt(data.minQuantity || 0),
-        maxQuantity: parseInt(data.maxQuantity || 1000),
+        minQuantity: parseInt(data.minQuantity || "0"),
+        maxQuantity: parseInt(data.maxQuantity || "1000"),
       },
     });
     
@@ -91,7 +88,10 @@ export async function PUT(request: Request, { params }: RouteParams) {
 }
 
 // 재고 항목 삭제
-export async function DELETE(request: Request, { params }: RouteParams) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   const { id } = params;
   
   try {
